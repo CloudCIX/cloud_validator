@@ -1,0 +1,44 @@
+project:
+  name: Ubuntu-Project
+
+subnets:
+  - name: Subnet-One
+    gateway: 192.168.123.1
+    mask: 24
+  - name: Subnet-Two
+    gateway: 10.10.10.1
+    mask: 24
+
+vms:
+  random: false
+  count: 3
+  vm_list:
+    - name: Ubuntu
+      dns: 91.103.0.1,8.8.8.8
+      cpu: 4
+      ram: 4
+      image_id: 12
+      gateway_subnet: 192.168.123.1/24
+      ip_addresses:
+        - nat: True
+        - nat: False
+      replicate: 0
+      storage_type_id: 1
+      storages:
+        - name: 'HDD-ONE'
+          gb: 50
+          primary: true
+
+firewall_rules:
+  - allow: true
+    destination: '192.168.123.1/24'
+    protocol: 'icmp'
+    source: '*'
+    debug_logging: True
+    pci_logging: False
+  - allow: true
+    destination: '10.10.10.1/24'
+    protocol: 'icmp'
+    source: '*'
+    debug_logging: True
+    pci_logging: False

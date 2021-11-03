@@ -1,0 +1,65 @@
+project:
+  name: Ubuntu-Project
+
+subnets:
+  - name: Subnet-One
+    gateway: 192.168.123.1
+    mask: 24
+  - name: Subnet-Two
+    gateway: 10.10.10.1
+    mask: 24
+
+vpns:
+  - description: VPN-One
+    local_subnet: 192.168.123.1/24
+    customer_subnets: [172.16.33.0/24, 10.10.0.0/16]
+    vpn_type: site_to_site
+    ike_authentication: md5
+    ike_encryption: aes-256-cbc
+    ike_lifetime: 18000
+    ike_dh_groups: group2
+    ike_pre_shared_key: test
+    ike_version: v1-only
+    ike_mode: main
+    ike_public_ip: 91.103.1.30
+    ipsec_authentication: hmac-md5-96
+    ipsec_encryption: aes-256-cbc
+    ipsec_lifetime: 18000
+    ipsec_pfs_groups: group2
+    ipsec_establish_time: immediately
+
+vms:
+  random: false
+  count: 0
+  vm_list:
+    - name: Ubuntu
+      dns: 91.103.0.1,8.8.8.8
+      cpu: 4
+      ram: 4
+      image_id: 12
+      gateway_subnet: 192.168.123.1/24
+      ip_addresses:
+        - address: 192.168.123.23
+          nat: True
+        - address: 10.10.10.3
+          nat: False
+      replicate: 0
+      storage_type_id: 1
+      storages:
+        - name: 'HDD-ONE'
+          gb: 50
+          primary: true
+
+firewall_rules:
+  - allow: true
+    destination: '192.168.123.1/24'
+    protocol: 'icmp'
+    source: '*'
+    debug_logging: True
+    pci_logging: False
+  - allow: true
+    destination: '10.10.10.1/24'
+    protocol: 'icmp'
+    source: '*'
+    debug_logging: True
+    pci_logging: False

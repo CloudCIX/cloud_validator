@@ -1,0 +1,28 @@
+project:
+  name: Random-Project
+
+subnets:
+  - name: Subnet-One
+    gateway: 192.168.111.1
+    mask: 24
+  - name: Subnet-Two
+    gateway: 10.10.10.1
+    mask: 24
+
+vms:
+  random: true
+  count: 2
+
+firewall_rules:
+  - allow: true
+    destination: 192.168.111.1/24
+    protocol: 'any'
+    source: '*'
+    debug_logging: True
+    pci_logging: False
+  - allow: true
+    destination: 10.10.10.1/24
+    protocol: 'any'
+    source: '*'
+    debug_logging: True
+    pci_logging: False
