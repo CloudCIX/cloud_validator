@@ -74,8 +74,8 @@ Validator Custom allows custom project setups to be defined in yaml files and th
 #### `firewall_rules`
 - `allow` - True if the traffic matching the rule should be allowed through the firewall. (required)
 - `destination` - A Subnet or IP Address representing the destination value for the rule. Use * to represent all. (required)
-- `port` - The port to use when checking incoming traffic against this rule. Use * to represent all. (required)
-- `protocol` - The protocol to use when checking incoming traffic against this rule. Options are [tcp, udp, any]. (required)
+- `port` - The port to use when checking incoming traffic against this rule. No port is required if the protocol is icmp or any
+- `protocol` - The protocol to use when checking incoming traffic against this rule. Options are [icmp, tcp, udp, any]. (required)
 - `source` - A Subnet or IP Address representing the source value for the rule. Use * to represent all. (required)
 
 
@@ -144,8 +144,12 @@ vms:
     - allow: true
       source: '*'
       destination: 192.168.132.2/32
-      port: '*'
-      protocol: 'any'
+      port: '20-25'
+      protocol: 'tcp'
+    - allow: true
+      source: '*'
+      destination: 192.168.132.2/32
+      protocol: 'icmp'
 
 ```
 # Settings
@@ -176,4 +180,4 @@ vms:
 
 
 All above `CLOUDCIX_API_` and `ROBOT_` fields are required and supplied in settings.py file to run this software smoothly.
-These fields can be sorted out from your PAM Operator.
+These fields can be received from your PAM Operator.

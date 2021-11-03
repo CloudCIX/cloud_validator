@@ -70,9 +70,9 @@ class VM(HardwareMixin):
                 print(response.json())
                 exit()
 
-            if status == state.UPDATE:
+            if status == state.RUNNING_UPDATE:
                 print(f'\r - VM #{self.obj["id"]} ({image}) update requested{"." * loop_count}{" " * 100}', end='')
-            elif status == state.UPDATING:
+            elif status == state.RUNNING_UPDATING:
                 print(f'\r - VM #{self.obj["id"]} ({image}) is updating{"." * loop_count}{" " * 100}', end='')
             elif status == state.RUNNING:
                 print(f'\r - VM #{self.obj["id"]} ({image}) was updated and is running!{" " * 100}')

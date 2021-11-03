@@ -198,7 +198,7 @@ class VirtualRouter(HardwareMixin):
         while time.time() < timeout:
             loop_count += 1
             status = api.IAAS.virtual_router.read(token=self.token, pk=self.obj['id']).json()['content']['state']
-            if status in [state.UPDATE, state.UPDATING]:
+            if status in [state.RUNNING_UPDATE, state.RUNNING_UPDATING]:
                 print(f'\r - Updating Virtual Router #{self.obj["id"]}{"." * loop_count}', end='')
             elif status == state.RUNNING:
                 print(f'\r - Virtual Router #{self.obj["id"]} Updated{" " * 100}')
