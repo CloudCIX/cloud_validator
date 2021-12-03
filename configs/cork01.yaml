@@ -28,8 +28,6 @@ vpns:
     routes:
       - local_subnet: 192.168.123.1/24
         remote_subnet: 172.16.33.0/24
-      - local_subnet: 192.168.123.1/24
-        remote_subnet: 10.10.0.0/16
 
 vms:
   random: false
