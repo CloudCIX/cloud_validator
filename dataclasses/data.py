@@ -153,8 +153,6 @@ class Data:
         # Add vpn
         data.vpns = [{
             'description': 'Home',
-            'local_subnet': '192.168.123.1/24',
-            'customer_subnets': ['172.16.32.0/24'],
             'vpn_type': 'site_to_site',
             'ike_authentication': 'md5',
             'ike_encryption': 'aes-256-cbc',
@@ -169,6 +167,10 @@ class Data:
             'ipsec_lifetime': 18000,
             'ipsec_pfs_groups': 'group2',
             'ipsec_establish_time': 'immediately',
+            'routes': [{
+                'local_subnet': '192.168.123.1/24',
+                'remote_subnet': '172.16.32.0/24',
+            }],
         }]
 
         # Get Subnets and used IPs for use in setting VM IPs
