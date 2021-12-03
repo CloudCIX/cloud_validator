@@ -8,8 +8,6 @@ subnets:
 
 vpns:
   - description: VPN-One
-    local_subnet: 192.168.123.1/24
-    customer_subnets: [172.16.33.0/24, 10.10.0.0/16]
     vpn_type: site_to_site
     ike_authentication: md5
     ike_encryption: aes-256-cbc
@@ -24,6 +22,11 @@ vpns:
     ipsec_lifetime: 18000
     ipsec_pfs_groups: group2
     ipsec_establish_time: immediately
+    routes:
+      - local_subnet: 192.168.123.1/24
+        remote_subnet: 172.16.33.0/24
+      - local_subnet: 192.168.123.1/24
+        remote_subnet: 10.10.0.0/16
 
 vms:
   random: true
