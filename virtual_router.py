@@ -44,15 +44,16 @@ class VirtualRouter(HardwareMixin):
         # so get the vpn details of this(CloudCIX) end.
         for vpn in self.vpns:
             label = 'VPN Tunnel details for configuration'
-            local_ntw = IPNetwork(dict(vpn['local_subnet'])['address_range']).cidr
-            remote_ntw = IPNetwork(f'{vpn["customer_subnets"][0]}').cidr  # just first subnet is enough.
             print('┌─────────────────────────────────────────────────────────────┐')
             print(f'│{label:^61}│')
             print('├──────────────────────────────┬──────────────────────────────┤')
             print('│           CloudCIX           │            Client            │')
             print('├──────────────────────────────┼──────────────────────────────┤')
             print('│                       Private Network                       │')
-            print(f'│{str(local_ntw):^30}│{str(remote_ntw):^30}│')
+            for route in vpn['routes']:
+                local_ntw = IPNetwork(dict(route['local_subnet'])['address_range']).cidr
+                remote_ntw = IPNetwork(f'{route["remote_subnet"]}').cidr  # just first subnet is enough.
+                print(f'│{str(local_ntw):^30}│{str(remote_ntw):^30}│')
             print('├──────────────────────────────┼──────────────────────────────┤')
             print('│                          Public IP                          │')
             print(f'│{self.obj["ip_address"]["address"]:^30}│{vpn["ike_public_ip"]:^30}│')
@@ -148,7 +149,7 @@ class VirtualRouter(HardwareMixin):
 
             # Testing IPSec
             data['command'] = f'show security ipsec security-associations vpn-name ' \
-                              f'virtual_router-{self.project_id}-vpn-{vpn["local_subnet"]["vlan"]}-ipsec-vpn'
+                              f'virtual_router-{self.project_id}-vpn-{vpn["stif_number"]}-ipsec-vpn'
             result = self._router_reponse(data)
             if 'error' in result.keys():
                 print(f'\r\033[91m - Failed to test VPN"s IPsec on router. Error: {result["error"]} \033[0m')
