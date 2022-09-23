@@ -22,6 +22,7 @@ class Data:
     subnets: List[Dict[str, Any]]
     used: List[str]
     vms: List[Dict[str, Any]]
+    # api doesn't take empty vpn dict(vpn={}), it can be None(vpn=None) or a dict with key pairs(vpn={'a':'b'})
     vpns: List[Optional[Dict[str, Any]]]
 
     def __init__(self):
@@ -161,7 +162,8 @@ class Data:
             'ike_pre_shared_key': 'test',
             'ike_version': 'v1-only',
             'ike_mode': 'main',
-            'ike_public_ip': '91.103.3.36',
+            'ike_gateway_type': 'public_ip',
+            'ike_gateway_value': '91.103.3.36',
             'ipsec_authentication': 'hmac-md5-96',
             'ipsec_encryption': 'aes-256-cbc',
             'ipsec_lifetime': 18000,

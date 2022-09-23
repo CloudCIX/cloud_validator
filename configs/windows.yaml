@@ -19,7 +19,8 @@ vpns:
     ike_pre_shared_key: test
     ike_version: v1-only
     ike_mode: main
-    ike_public_ip: 91.103.1.30
+    ike_gateway_type: public_ip
+    ike_gateway_value: 91.103.1.30
     ipsec_authentication: hmac-md5-96
     ipsec_encryption: aes-256-cbc
     ipsec_lifetime: 18000
@@ -28,6 +29,8 @@ vpns:
     routes:
       - local_subnet: 192.168.123.1/24
         remote_subnet: 172.16.33.0/24
+      - local_subnet: 192.168.123.1/24
+        remote_subnet: 10.10.0.0/16
 
 vms:
   random: false

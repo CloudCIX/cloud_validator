@@ -18,16 +18,18 @@ Validator Custom allows custom project setups to be defined in yaml files and th
 - `mask` - The mask for the subnet (required)
 
 ## `vpn`
-- `local_subnet` - local(cloud cix/alpha) private ntw from the project subnets. (required)
-- `customer_subnets` - list of remote(user end) private ntw address(ipv4). (required)
+- `routes` - An array of routes for local and remote subnets. (required)
+   - `local_subnet` - local(cloud cix/alpha) private ntw from the project subnets. (required)
+   - `remote_subnet` - CIDR notation of the Remote Subnet on the Customer side of the VPN Tunnel that should be given access through the VPN. (required)
 - `ike_authentication` - a must field from static list [md5, sha1, sha-256, sha-384]
 - `ike_encryption` - a must field from static list [aes-128-cbc, aes-192-cbc, aes-256-cbc, des-cbc, 3des-cbc]
 - `ike_lifetime` - an interger value within range [180, 86400] (optional)
 - `ike_dh_groups` - a must field from static list [group1, group2, group5, group19, group20, group24]
+- `ike_gateway_type` - Valid options are 'public_ip' or 'hostname'.
+- `ike_gateway_value` - Floating IP or hostname on the clients side of the VPN. Defaults to public_ip if not sent.
+- `ike_mode` - a must field from static list [main, aggressive]
 - `ike_pre_shared_key` - password(not more than 64 chars) for vpn connection establish. (required)
 - `ike_version` - a must field from static list [v1-only, v2-only]
-- `ike_mode` - a must field from static list [main, aggressive]
-- `ike_public_ip` - floating IP address of the user
 - `ipsec_authentication` - a must field from static list [hmac-md5-96, hmac-sha1-96, hmac-sha-256-96, hmac-sha-256-128]
 - `ipsec_encryption` - a must field from static list [aes-256-cbc, aes-192-cbc, aes-256-cbc, des-cbc, 3des-cbc, aes-128-gcm, aes-192-gcm, aes-256-gcm]
 - `ipsec_lifetime` - an interger value within range [180, 86400] (optional)
@@ -74,8 +76,8 @@ Validator Custom allows custom project setups to be defined in yaml files and th
 #### `firewall_rules`
 - `allow` - True if the traffic matching the rule should be allowed through the firewall. (required)
 - `destination` - A Subnet or IP Address representing the destination value for the rule. Use * to represent all. (required)
-- `port` - The port to use when checking incoming traffic against this rule. No port is required if the protocol is icmp or any
-- `protocol` - The protocol to use when checking incoming traffic against this rule. Options are [icmp, tcp, udp, any]. (required)
+- `port` - The port to use when checking incoming traffic against this rule. Use * to represent all. (required)
+- `protocol` - The protocol to use when checking incoming traffic against this rule. Options are [tcp, udp, any]. (required)
 - `source` - A Subnet or IP Address representing the source value for the rule. Use * to represent all. (required)
 
 
@@ -91,21 +93,23 @@ subnets:
     mask: 24
 
 vpn:
-  local_subnet: 192.168.123.1/24
-  customer_subnets: [172.16.32.0/24]
   ike_authentication: md5
   ike_encryption: aes-256-cbc
   ike_lifetime: 18000
   ike_dh_groups: group2
+  ike_gateway_type: public_ip
+  ike_gateway_value: 91.103.1.30
   ike_pre_shared_key: test
   ike_version: v1-only
   ike_mode: main
-  ike_public_ip: 91.103.1.30
   ipsec_authentication: hmac-md5-96
   ipsec_encryption: aes-256-cbc
   ipsec_lifetime: 18000
   ipsec_pfs_groups: group2
   ipsec_establish_time: immediately
+  routes:
+    local_subnet: 192.168.123.1/24
+    remote_subnet: 172.16.33.0/24
 
 vms:
   random: true
@@ -144,12 +148,8 @@ vms:
     - allow: true
       source: '*'
       destination: 192.168.132.2/32
-      port: '20-25'
-      protocol: 'tcp'
-    - allow: true
-      source: '*'
-      destination: 192.168.132.2/32
-      protocol: 'icmp'
+      port: '*'
+      protocol: 'any'
 
 ```
 # Settings

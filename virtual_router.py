@@ -44,19 +44,18 @@ class VirtualRouter(HardwareMixin):
         # so get the vpn details of this(CloudCIX) end.
         for vpn in self.vpns:
             label = 'VPN Tunnel details for configuration'
+            local_ntw = IPNetwork(dict(vpn['routes'][0]['local_subnet'])['address_range']).cidr
+            remote_ntw = IPNetwork(f'{vpn["routes"][0]["remote_subnet"]}').cidr  # just first subnet is enough.
             print('┌─────────────────────────────────────────────────────────────┐')
             print(f'│{label:^61}│')
             print('├──────────────────────────────┬──────────────────────────────┤')
             print('│           CloudCIX           │            Client            │')
             print('├──────────────────────────────┼──────────────────────────────┤')
             print('│                       Private Network                       │')
-            for route in vpn['routes']:
-                local_ntw = IPNetwork(dict(route['local_subnet'])['address_range']).cidr
-                remote_ntw = IPNetwork(f'{route["remote_subnet"]}').cidr  # just first subnet is enough.
-                print(f'│{str(local_ntw):^30}│{str(remote_ntw):^30}│')
+            print(f'│{str(local_ntw):^30}│{str(remote_ntw):^30}│')
             print('├──────────────────────────────┼──────────────────────────────┤')
             print('│                          Public IP                          │')
-            print(f'│{self.obj["ip_address"]["address"]:^30}│{vpn["ike_public_ip"]:^30}│')
+            print(f'│{self.obj["ip_address"]["address"]:^30}│{vpn["ike_gateway_value"]:^30}│')
             print('├──────────────────────────────┼──────────────────────────────┤')
             print('│                        IKE(Phase-1)                         │')
             print(f'│ Authentication               │{vpn["ike_authentication"]:^30}│')
@@ -123,7 +122,7 @@ class VirtualRouter(HardwareMixin):
                 'server_ip': management_ip,
                 'password': credentials,
                 'command': f'show security ike security-associations family inet '
-                           f'{vpn["ike_public_ip"]} detail | no-more ',
+                           f'{vpn["ike_gateway_value"]} detail | no-more ',
             }
             result = self._router_reponse(data)
             if 'error' in result.keys():
@@ -132,7 +131,7 @@ class VirtualRouter(HardwareMixin):
             output = result['output']
 
             status = False
-            line = f'\r - IKE peer {vpn["ike_public_ip"]}'
+            line = f'\r - IKE peer {vpn["ike_gateway_value"]}'
 
             if line in output:
                 ikes = output[1].split(line)
@@ -149,18 +148,18 @@ class VirtualRouter(HardwareMixin):
 
             # Testing IPSec
             data['command'] = f'show security ipsec security-associations vpn-name ' \
-                              f'virtual_router-{self.project_id}-vpn-{vpn["stif_number"]}-ipsec-vpn'
+                              f'virtual_router-{self.project_id}-vpn-{vpn["local_subnet"]["vlan"]}-ipsec-vpn'
             result = self._router_reponse(data)
             if 'error' in result.keys():
                 print(f'\r\033[91m - Failed to test VPN"s IPsec on router. Error: {result["error"]} \033[0m')
                 return
             output2 = result['output']
 
-            print(f'\r - IPSec', '\n\r', f'\r{output2}')
+            print('\r - IPSec', '\n\r', f'\r{output2}')
             if 'Total active tunnels: 0' in output2:
-                print(f'\r\033[91m - VPN phase2 is not running. \033[0m')
+                print('\r\033[91m - VPN phase2 is not running. \033[0m')
             else:
-                print(f'\r\033[92m - VPN phase2 is running. \033[0m')
+                print('\r\033[92m - VPN phase2 is running. \033[0m')
 
     def _router_reponse(self, data):
         """
@@ -199,7 +198,7 @@ class VirtualRouter(HardwareMixin):
         while time.time() < timeout:
             loop_count += 1
             status = api.IAAS.virtual_router.read(token=self.token, pk=self.obj['id']).json()['content']['state']
-            if status in [state.RUNNING_UPDATE, state.RUNNING_UPDATING]:
+            if status in [state.UPDATE, state.UPDATING]:
                 print(f'\r - Updating Virtual Router #{self.obj["id"]}{"." * loop_count}', end='')
             elif status == state.RUNNING:
                 print(f'\r - Virtual Router #{self.obj["id"]} Updated{" " * 100}')

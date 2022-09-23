@@ -1,12 +1,9 @@
 project:
-  name: Concurrent-Kill-Me
+  name: Test-Project24
 
 subnets:
   - name: Subnet-One
     gateway: 192.168.123.1
-    mask: 24
-  - name: Subnet-Two
-    gateway: 10.10.10.1
     mask: 24
 
 vpns:
@@ -16,11 +13,11 @@ vpns:
     ike_encryption: aes-256-cbc
     ike_lifetime: 18000
     ike_dh_groups: group2
+    ike_gateway_value: 91.103.3.30
+    ike_gateway_type: public_ip
     ike_pre_shared_key: test
     ike_version: v1-only
     ike_mode: main
-    ike_gateway_type: public_ip
-    ike_gateway_value: 91.103.1.30
     ipsec_authentication: hmac-md5-96
     ipsec_encryption: aes-256-cbc
     ipsec_lifetime: 18000
@@ -34,36 +31,26 @@ vpns:
 
 vms:
   random: false
-  count: 0
+  count: 1
   vm_list:
-    - name: Windows-Replicate
+    - name: VM-ONE
       dns: 91.103.0.1,8.8.8.8
-      cpu: 4
+      cpu: 2
       ram: 4
-      image_id: 3
+      image_id: 17
       gateway_subnet: 192.168.123.1/24
       ip_addresses:
-        - address: 192.168.123.23
+        - address: 192.168.123.2
           nat: True
-        - address: 10.10.10.3
-          nat: False
-      replicate: 8
       storage_type_id: 1
       storages:
         - name: 'HDD-ONE'
-          gb: 50
+          gb: 20
           primary: true
-
 firewall_rules:
   - allow: true
     destination: '192.168.123.1/24'
-    protocol: 'icmp'
-    source: '*'
-    debug_logging: True
-    pci_logging: False
-  - allow: true
-    destination: '10.10.10.1/24'
-    protocol: 'icmp'
-    source: '*'
+    protocol: 'any'
+    source: '91.103.3.36'
     debug_logging: True
     pci_logging: False
