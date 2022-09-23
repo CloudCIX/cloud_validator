@@ -102,6 +102,22 @@ class Project:
 
         return True
 
+    def check_bandwidth(self):
+        """
+        Verify that the VMs in a project
+        """
+
+        print('┌──────────────────────┐')
+        print(f'│{"Checking Bandwidth":^22}│')
+        print('└──────────────────────┘')
+        print()
+
+        # Verify VMs build using API
+        failures = [vm.check_bandwidth() for vm in self.vms].count(False)
+        if failures:
+            print(f'{failures} VMs failed the bandwidth test')
+        print()
+
     def check_create(self):
         """
         Verify that the project Virtual Router and VMs are successfully built.
@@ -203,7 +219,7 @@ class Project:
                     s['vxlan'] = subnet['vxlan']
 
         # Updating only virtual_router and test if VM restarts by the state from database
-        print(f'\r  Updating the virtual_router only and testing if VM restarts')
+        print('\r  Updating the virtual_router only and testing if VM restarts')
         self.data.add_firewall_rule()
         update = api.IAAS.cloud.update(token=self.token, pk=self.project_id, data=vars(self.data))
         if update.status_code == 200:
@@ -221,7 +237,7 @@ class Project:
             print(update.json())
             exit(1)
 
-        print(f'\r  Checking the virtual_router has updated before proceeding')
+        print('\r  Checking the virtual_router has updated before proceeding')
         # Verify Virtual Router updated using API
         self.virtual_router.software_check_update()
 
@@ -229,7 +245,7 @@ class Project:
         existing_vm_count = len(vms)
         self.data.add_vm()
         # Updating only virtual_router and test if VM restarts by the state from database
-        print(f'\r  Adding VM to project')
+        print('\r  Adding VM to project')
         update = api.IAAS.cloud.update(token=self.token, pk=self.project_id, data=vars(self.data))
 
         params = {'project_id': self.project_id, 'exclude[id__in]': [vm.obj['id'] for vm in self.vms]}

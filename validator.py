@@ -1,5 +1,7 @@
 # stdlib
+import getpass
 import os
+import sys
 from typing import Any, Dict, List, Union
 # local
 from project import Project
@@ -10,7 +12,7 @@ from cloudcix import api  # noqa: E402
 from cloudcix.auth import get_admin_token  # noqa: E402
 
 
-def region_validator():
+def region_validator(password):
     """
     List all regions and give provide options to validate.
 
@@ -127,6 +129,7 @@ def validator_custom(region: str):
     project = Project(region=region, token=token, file=selected)
     project.create()
     project.check_create()
+    project.check_bandwidth()
     project.restart()
     project.delete()
 
@@ -535,4 +538,10 @@ def get_projects(region: str, token: str) -> int:
 
 if __name__ == '__main__':
     os.system('clear')
-    region_validator()
+
+    password = ''
+    while password == '':
+        password = getpass.getpass('[validator] Provide network password (exit quits); ')
+    if password == 'exit':
+        sys.exit()
+    region_validator(password)

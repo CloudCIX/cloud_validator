@@ -1,4 +1,6 @@
 # stdlib
+import getpass
+import os
 import subprocess
 import time
 from collections import deque
@@ -68,6 +70,65 @@ class HardwareMixin:
         finally:
             client.close()
         return result
+
+    def stress_test(self, public_ip: str, vm_id: int):
+        """
+        Test concurrent connections to the VM
+        """
+        print(' - Checking bandwidth of VM')
+        success = self.prepare_for_test(public_ip, vm_id)
+        if not success:
+            print(f'\r\033[91m - VM #{vm_id} Could not be set up for bandwidth tests.\033[0m')
+            return
+
+        os.system('clear')
+        print('Testing traffic')
+        proc = subprocess.run(f'nping -c 3 -p 22,5353,80 {public_ip}', shell=True)
+        if proc.returncode != 0:
+            print(f'Failure pinging open ports for VM at {public_ip}')
+        proc = subprocess.run(f'iperf3 -P 4 -c {public_ip}', shell=True)
+        if proc.returncode != 0:
+            print(f'Failure stressing traffic for VM at {public_ip}')
+
+    def prepare_for_test(self, public_ip, vm_id):
+        password = ''
+        while password == '':
+            password = getpass.getpass(f'[validator] Provide password for VM {vm_id} (exit quits): ')
+        if password == 'exit':
+            return False
+        print('Password set')
+
+        cmds = [
+            f"echo '{password}' | sudo -S apt-get -y update",
+            f"echo '{password}' | sudo -S apt-get -q install -y nginx dnsmasq iperf3",
+            f"echo '{password}' | sudo -S nginx",
+            f"echo '{password}' | sudo -S dnsmasq -p 5353",
+            f"echo '{password}' | sudo -S iperf3 -s -D",
+        ]
+
+        # Get an ssh session to the VM
+        success = True
+        client = SSHClient()
+        client.set_missing_host_key_policy(AutoAddPolicy())
+        try:
+            print(f'Connecting to host {public_ip}')
+            client.connect(public_ip, username='administrator', password=password)
+
+            for cmd in cmds:
+                print(cmd)
+                _, stdout, stderr = client.exec_command(cmd)
+                # Block until command finishes
+                stdout.channel.recv_exit_status()
+                # Read any errors
+                error = self.get_full_response(stderr.channel, wait_time=1)
+                if error:
+                    print(error)
+        except SSHException:
+            print('Failed to set up VM for bandwidth tests')
+            success = False
+        finally:
+            client.close()
+        return success
 
     @staticmethod
     def get_full_response(channel: Channel, wait_time: int = 15, read_size: int = 64) -> str:

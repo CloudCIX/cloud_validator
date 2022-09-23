@@ -70,9 +70,9 @@ class VM(HardwareMixin):
                 print(response.json())
                 exit()
 
-            if status == state.RUNNING_UPDATE:
+            if status == state.UPDATE:
                 print(f'\r - VM #{self.obj["id"]} ({image}) update requested{"." * loop_count}{" " * 100}', end='')
-            elif status == state.RUNNING_UPDATING:
+            elif status == state.UPDATING:
                 print(f'\r - VM #{self.obj["id"]} ({image}) is updating{"." * loop_count}{" " * 100}', end='')
             elif status == state.RUNNING:
                 print(f'\r - VM #{self.obj["id"]} ({image}) was updated and is running!{" " * 100}')
@@ -158,6 +158,24 @@ class VM(HardwareMixin):
             return
 
         self.ping(type='VM', id=self.obj['id'], ip=public_ip, response=True)
+
+    def check_bandwidth(self):
+        public_ip = None
+
+        for private_ip in self.obj['ip_addresses']:
+            if private_ip['public_ip'] is not None:
+                public_ip = private_ip['public_ip']['address']
+                break
+
+        if not public_ip:
+            print(
+                f'\r\033[91m - VM #{self.obj["id"]} does not have a public ip, '
+                f'sleeping for 1 minute.{" " * 100} \033[0m',
+            )
+            time.sleep(60)
+            return
+
+        return self.stress_test(public_ip, vm_id=self.obj['id'])
 
     def software_check_stopped(self):
         """
