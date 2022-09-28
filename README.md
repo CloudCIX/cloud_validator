@@ -1,5 +1,11 @@
 # cloud_validator
 
+This is an application to probe the readiness of a CloudCIX Region for building infrastructure. It ensures
+connectivity is in place and that CloudCIX Robot can build VMs, VirtualRouters, snapshots, and backups.
+
+To open an interactive utility where you can specify what tests you want to run, from the root directory of this
+repository run```python3 validator.py``` in your terminal of choice.
+
 A Validator for the Cloud that runs in currently 3 different ways'
 1. Validator Light, for quickly building a couple of VMs
 2. Validator Custom, for running custom builds easily defined in yaml files (see below)
@@ -39,15 +45,15 @@ Validator Custom allows custom project setups to be defined in yaml files and th
 ## `vms`
 - `random` - True if project should contain a certain number of randomly generated VMs. (required)
 - `count` - The number of random VMs to be created. (required if random is True)
-- `vm_list` - List of predefined VMs
+- `vm_list` - List of predefined VMs. (optional)
 
 ### `vm_list`
 - `name` - Name of the VM. (required)
 - `dns` - The domain name servers to be used by the project. (required)
-- `gateway_subnet` - RFC 1918 address range from subnets that the Gateway for the VM will be defined on. 
-- `ip_addresses` The IP address for the VM. Must be within one of the defined subnets. Not required. If not included a random IP within one of the subnets will be assigned
-  - `address`: IP Address of VM
-  - `nat`: Boolean, only IPs from the gateway subnet can be NATed
+- `gateway_subnet` - RFC 1918 address range from subnets that the Gateway for the VM will be defined on. (required)
+- `ip_addresses` The IP address for the VM. Must be within one of the defined subnets. If not included a random IP within one of the subnets will be assigned. (optional)
+  - `address`: IP Address of VM.  (required)
+  - `nat`: Boolean, only IPs from the gateway subnet can be NATed (required)
 - `cpu` - Number of CPU cores to be assigned. (required)
 - `ram` - Amount of RAM in GB to be assigned. (required)
 - `image_id` - ID of the operating system to be installed. (required)
@@ -61,11 +67,11 @@ Validator Custom allows custom project setups to be defined in yaml files and th
   - 15 - Red Hat Server 7.7
   - 16 - Centos Linux 8
   - 17 - Ubuntu Server 20.04
-- `replicate` - Number of replicates of a VM there should be within a project. e.g 5 would produce five of the same VM. Not required.
+- `replicate` - Number of replicas of a VM there should be within a project. e.g 5 would produce five of the same VM. (optional)
 - `storage_type_id` - ID of the storage type (required)
   - 1 is HDD
   - 2 is SSD
-- `storage` - List of storage for the VM
+- `storage` - List of storages for the VM. (required)
 
 #### `storage`
 - `name` - Name of the storage. Should be unique within the VM. (required)
@@ -74,7 +80,7 @@ Validator Custom allows custom project setups to be defined in yaml files and th
 
 
 #### `firewall_rules`
-- `allow` - True if the traffic matching the rule should be allowed through the firewall. (required)
+- `allow` - Boolean flag specifying if traffic matching the rule should be allowed through the firewall. (required)
 - `destination` - A Subnet or IP Address representing the destination value for the rule. Use * to represent all. (required)
 - `port` - The port to use when checking incoming traffic against this rule. Use * to represent all. (required)
 - `protocol` - The protocol to use when checking incoming traffic against this rule. Options are [tcp, udp, any]. (required)
@@ -152,7 +158,9 @@ vms:
       protocol: 'any'
 
 ```
-# Settings
+# Terms
+
+The following is a list of terms used when discussing Cloud Validator
 
 `Region`: where IAAS(Infrastructure As A Service) is physically(VMs, VPNs, VRs) stored on servers and routers.
 
@@ -160,24 +168,28 @@ vms:
 
 `Robot`: Every Region has Robot functionality and has an account in its COP.
 
-`validating Region`: It is the Region you are trying to validate its functionality with this software.
+`Validating Region`: The Region you are validating the functionality of.
 
-`validating COP` : It is the COP where your validating Region is adopted/registered to.
+`Validating COP` : The COP where your Validating Region is adopted/registered to.
 
-`User account`: One must have an account registered in validating COP to make API requests.
+`User Account`: One must have an account registered in Validating COP to make API requests.
 
-`Robot account`: validating Region is an address and has an account in its COP. 
+`Robot Account`: Validating Region is an address and has an account in its Validating COP.
+
+# Settings
+
+The following are settings required for Cloud Validator to be able to build infrastructure and test a Region.
 
 - `CLOUDCIX_API_URL` - API url for the validating COP.
-- `CLOUDCIX_API_USERNAME` - Username of the user account registered in validating COP.
-- `CLOUDCIX_API_PASSWORD` - Password of the above user account.
-- `CLOUDCIX_API_KEY` - API key provided by the validating COP to the above user.
-- `CLOUDCIX_API_VERSION` - Current CloudCIX api version, which is 2.
+- `CLOUDCIX_API_USERNAME` - Username of the User account.
+- `CLOUDCIX_API_PASSWORD` - Password of the User account.
+- `CLOUDCIX_API_KEY` - API key provided by the Validating COP to the User Account.
+- `CLOUDCIX_API_VERSION` - Current CloudCIX API version, which is 2.
 - `CLOUDCIX_API_V2_URL` - V2 API url for the validating COP.
-- `ROBOT_USERNAME` - Validating Region's Robot account username.
-- `ROBOT_PASSWORD` - Validating Region's Robot account password
-- `ROBOT_API_KEY` - Validating Region's Robot account API key.
+- `ROBOT_USERNAME` - Validating Region's Robot Account username.
+- `ROBOT_PASSWORD` - Validating Region's Robot Account password
+- `ROBOT_API_KEY` - Validating Region's Robot Account API key.
 
 
-All above `CLOUDCIX_API_` and `ROBOT_` fields are required and supplied in settings.py file to run this software smoothly.
+All above `CLOUDCIX_API_` and `ROBOT_` fields are required and supplied in settings.py file.
 These fields can be received from your PAM Operator.
