@@ -131,18 +131,16 @@ class HardwareMixin:
         return success
 
     @staticmethod
-    def get_full_response(channel: Channel, wait_time: int = 15, read_size: int = 64) -> str:
+    def get_full_response(channel: Channel, read_size: int = 64) -> str:
         """
         Get the full response from the specified paramiko channel, waiting a given number of seconds before trying to
         read from it each time.
         :param channel: The channel to be read from
-        :param wait_time: How long in seconds between each read
         :param read_size: How many bytes to be read from the channel each time
         :return: The full output from the channel, or as much as can be read given the parameters.
         """
         fragments: Deque[str] = deque()
-        time.sleep(wait_time)
-        while channel.recv_ready():
-            fragments.append(channel.recv(read_size).decode())
-            time.sleep(wait_time)
+        while not channel.exit_status_ready():
+            if channel.recv_ready():
+                fragments.append(channel.recv(read_size).decode())
         return ''.join(fragments)
