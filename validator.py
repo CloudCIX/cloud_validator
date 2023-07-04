@@ -2,6 +2,7 @@
 import getpass
 import os
 import sys
+import random
 from typing import Any, Dict, List, Union
 # local
 from project import Project
@@ -294,18 +295,20 @@ def validator_heavy(region: str):
 
     projects: List[Project] = []
 
-    for type in types:
-        while True:
-            try:
-                token = get_admin_token()
-                project = Project(region=region, token=token, file='', heavy=True, cores=1, ram=1, storage=50, **type)  # type: ignore # noqa
-                project.create()
-                projects.append(project)
-            except SystemExit:
-                storage = 'HDD' if type['storage_type_id'] == 1 else 'SSD'
-                print(f'\n - Projects of this type have errored out. Unix: {type["unix"]}; Storage: {storage}')
-                print()
-                break
+    while len(types) > 0:
+        selected_type = random.choice(types)
+        try:
+            token = get_admin_token()
+            project = Project(region=region, token=token, file='', heavy=True, cores=1, ram=1, storage=50, **selected_type)  # type: ignore # noqa
+            project.create()
+            projects.append(project)
+        except SystemExit:
+            storage = 'HDD' if selected_type['storage_type_id'] == 1 else 'SSD'
+            print(f'\n - Projects of this type have errored out. Unix: {selected_type["unix"]}; Storage: {storage}')
+            print()
+            # remove type from list
+            types.remove(selected_type)
+            
 
     for project in projects:
         new_token = get_admin_token()
