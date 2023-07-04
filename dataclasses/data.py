@@ -155,7 +155,7 @@ class Data:
         data.vpns = [{
             'description': 'Home',
             'vpn_type': 'site_to_site',
-            'ike_authentication': 'md5',
+            'ike_authentication': 'sha-384',
             'ike_encryption': 'aes-256-cbc',
             'ike_lifetime': 18000,
             'ike_dh_groups': 'group2',
@@ -164,7 +164,7 @@ class Data:
             'ike_mode': 'main',
             'ike_gateway_type': 'public_ip',
             'ike_gateway_value': '91.103.3.36',
-            'ipsec_authentication': 'hmac-md5-96',
+            'ipsec_authentication': 'hmac-sha-256-128',
             'ipsec_encryption': 'aes-256-cbc',
             'ipsec_lifetime': 18000,
             'ipsec_pfs_groups': 'group2',

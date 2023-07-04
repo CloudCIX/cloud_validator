@@ -136,7 +136,7 @@ class VM(HardwareMixin):
         """
         if self.phantom:
             print(
-                f'\r\033[91m - VM #{self.obj["id"]} ({self.ob["image"]["display_name"]}) is phantom, '
+                f'\r\033[91m - VM #{self.obj["id"]} ({self.obj["image"]["display_name"]}) is phantom, '
                 f'sleeping for 1 minute.{" " * 100} \033[0m',
             )
             time.sleep(60)
@@ -250,7 +250,7 @@ class VM(HardwareMixin):
         """
         if self.phantom:
             print(
-                f'\r\033[91m - VM #{self.obj["id"]} ({self.ob["image"]["display_name"]}) is phantom,'
+                f'\r\033[91m - VM #{self.obj["id"]} ({self.obj["image"]["display_name"]}) is phantom,'
                 f' sleeping for 1 minute.{" " * 100} \033[0m',
             )
             time.sleep(60)
@@ -277,7 +277,7 @@ class VM(HardwareMixin):
         """
         if self.phantom:
             print(
-                f'\r\033[91m - VM #{self.obj["id"]} ({self.ob["image"]["display_name"]}) is phantom, '
+                f'\r\033[91m - VM #{self.obj["id"]} ({self.obj["image"]["display_name"]}) is phantom, '
                 f'sleeping for 1 minute.{" " * 100} \033[0m',
             )
             time.sleep(60)
@@ -340,7 +340,7 @@ class VM(HardwareMixin):
         """
         if self.phantom:
             print(
-                f'\r\033[91m - VM #{self.obj["id"]} ({self.ob["image"]["display_name"]}) is phantom, '
+                f'\r\033[91m - VM #{self.obj["id"]} ({self.obj["image"]["display_name"]}) is phantom, '
                 f'sleeping for 1 minute.{" " * 100} \033[0m',
             )
             time.sleep(60)
@@ -393,7 +393,7 @@ class VM(HardwareMixin):
         """
         if self.phantom:
             print(
-                f'\r\033[91m - VM #{self.obj["id"]} ({self.ob["image"]["display_name"]}) is phantom, '
+                f'\r\033[91m - VM #{self.obj["id"]} ({self.obj["image"]["display_name"]}) is phantom, '
                 f'sleeping for 1 minute.{" " * 100} \033[0m',
             )
             time.sleep(60)
