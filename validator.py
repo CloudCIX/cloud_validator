@@ -402,7 +402,7 @@ def get_servers(region: str, token: str):
     else:
         # Fetch the servers and assets from the API
         asset_tags = list(set(server['asset_tag'] for server in servers if server['asset_tag'] is not None))
-        asset_params = {'asset_tags__in': asset_tags, 'idAddress': region}
+        asset_params = {'assetTag__in': asset_tags, 'idAddress': region}
         response = api.Asset.asset.list(token=token, params=asset_params)
         if response.status_code != 200:
             print(
@@ -424,7 +424,7 @@ def get_servers(region: str, token: str):
         print('│   Model   │ Host  │ RAM (GB) │ HDD (GB) │ SSD (GB) │ Asset Tag │   Location   │  Type  │')
         print('├───────────┼───────┼──────────┼──────────┼──────────┼───────────┼──────────────┼────────┤')
         for server in servers:
-            asset_tag, location = asset_map.get(server['asset_tage'], ('?', '?'))
+            asset_tag, location = asset_map.get(server['asset_tag'], ('?', '?'))
             host = 'Yes' if server['host'] else 'No'
             server_type = 'HyperV' if server['type'] == 1 else 'KVM'
             print(
