@@ -56,8 +56,7 @@ def region_validator(password):
 
     # Hardware information
     os.system('clear')
-    # get_servers(region, token)
-    # get_routers(region, token)
+    get_servers(region, token)
     project_count = get_projects(region, robot_token)
 
     # Provide options for what to do
@@ -315,7 +314,9 @@ def validator_heavy(region: str):
 
     # List VMs using robot token
     robot_token = get_robot_token()
-    response = api.IAAS.vm.list(token=robot_token)
+    # Exclude VMs in the Closed State (99)
+    params = ('exclude[state]': 99)
+    response = api.IAAS.vm.list(token=robot_token, params=params)
     if response.status_code == 200:
         vms = response.json()['content']
     else:
@@ -343,15 +344,15 @@ def validator_heavy(region: str):
             storage['gb']
             for vm in vms
             for storage in vm['storages']
-            if vm['storage_type'] == 'SSD'
+            if vm['server_id'] == id and server['storage_type']['id'] == 2
         ])
         server_used_hdd = sum([
             storage['gb']
             for vm in vms
             for storage in vm['storages']
-            if vm['storage_type'] == 'HDD'
+            if vm['server_id'] == id and server['storage_type']['id'] == 1
         ])
-        percent_cores = round(server_used_cores / (server['cores'] * 4) * 100, 3)
+        percent_cores = round(server_used_cores / (server['cores'] * OVERSUBSCRIPTION_VALUE) * 100, 3)
         percent_ram = round(server_used_ram / server['ram'] * 100, 3)
         percent_hdd = round(server_used_hdd / server['gb'] * 100, 3) if server['storage_type']['id'] == 1 else 0
         percent_ssd = round(server_used_ssd / server['gb'] * 100, 3) if server['storage_type']['id'] == 2 else 0
@@ -400,8 +401,8 @@ def get_servers(region: str, token: str):
         return
     else:
         # Fetch the servers and assets from the API
-        asset_ids = list(set(server['idAsset'] for server in servers if server['idAsset'] is not None))
-        asset_params = {'id__in': asset_ids, 'idAddress': region}
+        asset_tags = list(set(server['asset_tag'] for server in servers if server['asset_tag'] is not None))
+        asset_params = {'assetTag__in': asset_tags, 'idAddress': region}
         response = api.Asset.asset.list(token=token, params=asset_params)
         if response.status_code != 200:
             print(
@@ -413,7 +414,7 @@ def get_servers(region: str, token: str):
 
         asset_map = {}
         for asset in assets:
-            asset_map[asset['id']] = (asset['assetTag'], asset['location'].replace(' ', ''))
+            asset_map[asset['asset_tag']] = (asset['assetTag'], asset['location'].replace(' ', ''))
 
         label = f'Servers in region #{region}'
         print('\r', end='')  # Remove the loading message
@@ -423,7 +424,7 @@ def get_servers(region: str, token: str):
         print('│   Model   │ Host  │ RAM (GB) │ HDD (GB) │ SSD (GB) │ Asset Tag │   Location   │  Type  │')
         print('├───────────┼───────┼──────────┼──────────┼──────────┼───────────┼──────────────┼────────┤')
         for server in servers:
-            asset_tag, location = asset_map.get(server['idAsset'], ('?', '?'))
+            asset_tag, location = asset_map.get(server['asset_tag'], ('?', '?'))
             host = 'Yes' if server['host'] else 'No'
             server_type = 'HyperV' if server['type'] == 1 else 'KVM'
             print(
@@ -431,91 +432,6 @@ def get_servers(region: str, token: str):
                 f'{server["flash"]:^10}│{asset_tag:^11}│{location:^14}│{server_type:^8}│',
             )
         print('└───────────┴───────┴──────────┴──────────┴──────────┴───────────┴──────────────┴────────┘')
-
-
-def get_routers(region: str, token: str):
-    """
-    Retrieve the routers in a given region.
-    :param region: The region from which to retrieve the routers.
-    :param token: The API access token for the cloudcix API.
-    """
-
-    # Get the Routers
-    params = {'search[region_id]': region}
-    response = api.IAAS.router.list(token=token, params=params)
-    if response.status_code != 200:
-        print(
-            f'HTTP Error {response.status_code} occurred while trying to list instances of IAAS.router with the ',
-            f'following params:{params}.\nResponse from API: {response.content.decode()}',
-        )
-        exit(1)
-
-    routers = response.json()['content']
-    if len(routers) == 0:
-        print(f'\033[91m No Routers found in region #{region} \033[0m')
-        return
-    else:
-        # Fetch the data used to render routers
-
-        # Get routers
-        router_rmpf = {}
-        port_ids = []
-        for router in routers:
-            response = api.IAAS.port.list(token=token, params={}, router_id=router['idRouter'])
-            if response.status_code != 200:
-                print(
-                    f'HTTP Error {response.status_code} occurred while trying to list instances of IAAS.port '
-                    f'with idRouter={router["idRouter"]} as filter.\nResponse from API: {response.content.decode()}',
-                )
-            else:
-                ports = response.json()['content']
-            port_ids.append(ports[0]['model_port_id'])
-            router_rmpf[router['idRouter']] = ports[0]['model_port_id']
-
-        # Get the Router Model Port Function instances
-        rmpf_params = {'model_port_id__in': port_ids}
-        response = api.IAAS.router_model_port_function.list(token=token, params=rmpf_params)
-        if response.status_code != 200:
-            print(
-                f'HTTP Error {response.status_code} occurred while trying to list instances of IAAS.r_m_p_f with the ',
-                f'following params:{rmpf_params}.\nResponse from API: {response.content.decode()}',
-            )
-            exit(1)
-        rmpfs = response.json()['content']
-
-        # Get the Router Models
-        rmpf_model = {}
-        for rmpf in rmpfs:
-            rmpf_model[rmpf['model_port_id']] = rmpf['router_model_id']
-        router_model_ids = list(rmpf['router_model_id'] for rmpf in rmpfs)
-        model_params = {'router_model_id__in': router_model_ids}
-        response = api.IAAS.router_model.list(token=token, params=model_params)
-        if response.status_code != 200:
-            print(
-                f'HTTP Error {response.status_code} occurred while trying to list instances of IAAS.router_model ',
-                f'with the following params:{model_params}.\nResponse from API: {response.content.decode()}',
-            )
-            exit(1)
-        router_models = response.json()['content']
-
-        # model <-> model data
-        model_data = {}
-        for router_model in router_models:
-            model_data[router_model['router_model_id']] = [router_model['model'], router_model['vrMax']]
-        # final: router <-> model data
-
-        # Print the details
-        label = f'Routers in region #{region}'
-        print('┌─────────────────────────────────────────┐')
-        print(f'│{label:^41}│')
-        print('├────────┬─────────────────────┬──────────┤')
-        print('│   ID   │        Model        │ Capacity │')
-        print('├────────┼─────────────────────┼──────────┤')
-        for router in routers:
-            model, vr_max = model_data[rmpf_model[router_rmpf[router['idRouter']]]]
-            print(f'│{router["idRouter"]:^8}│{model:^21}│{vr_max:^10}│')
-        print('└────────┴─────────────────────┴──────────┘')
-
 
 def get_projects(region: str, token: str) -> int:
     """
@@ -526,7 +442,8 @@ def get_projects(region: str, token: str) -> int:
 
     # Project Information
     # getting the list of all projects from the given region
-    response = api.IAAS.project.list(token=token)
+    params = {'search[closed]': False}
+    response = api.IAAS.project.list(token=token, params=params)
     if response.status_code != 200:
         print(
             f'HTTP Error {response.status_code} occurred while trying to list instances of IAAS.project.',
