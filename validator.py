@@ -149,6 +149,20 @@ def validator_heavy(region: str):
     os.system('clear')
     robot_token = get_robot_token()
 
+    # Oversubscription Value
+    OVERSUBSCRIPTION_VALUE = 8
+
+    # Limit Variables
+    DISK_BASE_LIMIT = 100
+    RAM_BASE_LIMIT = 8
+    CPU_CREATE_LIMIT = 0.77
+    DISK_CREATE_LIMIT = 0.77
+    RAM_CREATE_LIMIT = 0.77
+    CPU_UPDATE_LIMIT = 1.00
+    DISK_UPDATE_LIMIT = 0.9
+    RAM_UPDATE_LIMIT = 0.95
+
+
     # Get region hardware
     params = {'search[region_id]': region, 'search[enabled]': True}
     response = api.IAAS.server.list(token=robot_token, params=params)
@@ -161,68 +175,68 @@ def validator_heavy(region: str):
 
     # Sum region hardware windows hdd
     cores_windows_hdd = sum([
-        server['cores'] * 4
+        server['cores'] * OVERSUBSCRIPTION_VALUE * CPU_CREATE_LIMIT
         for server in servers
         if server['type']['id'] == 1 and server['storage_type']['id'] == 1
     ])
     ram_windows_hdd = sum([
-        server['ram']
+        (server['ram'] - RAM_BASE_LIMIT) * RAM_CREATE_LIMIT
         for server in servers
         if server['type']['id'] == 1 and server['storage_type']['id'] == 1
     ])
     storage_windows_hdd = sum([
-        server['gb'] - 100
+        (server['gb'] - DISK_BASE_LIMIT) * DISK_CREATE_LIMIT
         for server in servers
         if server['type']['id'] == 1 and server['storage_type']['id'] == 1
     ])
 
     # Sum region hardware windows ssd
     cores_windows_ssd = sum([
-        server['cores'] * 4
+        server['cores'] * OVERSUBSCRIPTION_VALUE * CPU_CREATE_LIMIT
         for server in servers
         if server['type']['id'] == 1 and server['storage_type']['id'] == 2
     ])
     ram_windows_ssd = sum([
-        server['ram']
+        (server['ram'] - RAM_BASE_LIMIT) * RAM_CREATE_LIMIT
         for server in servers
         if server['type']['id'] == 1 and server['storage_type']['id'] == 2
     ])
     storage_windows_ssd = sum([
-        server['gb'] - 100
+        (server['gb'] - DISK_BASE_LIMIT) * 0.77
         for server in servers
         if server['type']['id'] == 1 and server['storage_type']['id'] == 2
     ])
 
     # Sum region hardware unix hdd
     cores_unix_hdd = sum([
-        server['cores'] * 4
+        server['cores'] * OVERSUBSCRIPTION_VALUE * CPU_CREATE_LIMIT
         for server in servers
         if server['type']['id'] == 2 and server['storage_type']['id'] == 1
     ])
     ram_unix_hdd = sum([
-        server['ram']
+        (server['ram'] - RAM_BASE_LIMIT) * RAM_CREATE_LIMIT
         for server in servers
         if server['type']['id'] == 2 and server['storage_type']['id'] == 1
     ])
     storage_unix_hdd = sum([
-        server['gb'] - 100
+        (server['gb'] - DISK_BASE_LIMIT) * 0.77
         for server in servers
         if server['type']['id'] == 2 and server['storage_type']['id'] == 1
     ])
 
     # Sum region hardware unix ssd
     cores_unix_ssd = sum([
-        server['cores'] * 4
+        server['cores'] * OVERSUBSCRIPTION_VALUE * CPU_CREATE_LIMIT
         for server in servers
         if server['type']['id'] == 2 and server['storage_type']['id'] == 2
     ])
     ram_unix_ssd = sum([
-        server['ram']
+        (server['ram'] - RAM_BASE_LIMIT) * RAM_CREATE_LIMIT
         for server in servers
         if server['type']['id'] == 2 and server['storage_type']['id'] == 2
     ])
     storage_unix_ssd = sum([
-        server['gb'] - 100
+        (server['gb'] - DISK_BASE_LIMIT) * 0.77
         for server in servers
         if server['type']['id'] == 2 and server['storage_type']['id'] == 2
     ])
