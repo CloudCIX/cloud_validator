@@ -202,7 +202,7 @@ def validator_heavy(region: str):
         if server['type']['id'] == 1 and server['storage_type']['id'] == 2
     ])
     storage_windows_ssd = sum([
-        (server['gb'] - DISK_BASE_LIMIT) * 0.77
+        (server['gb'] - DISK_BASE_LIMIT) * DISK_CREATE_LIMIT
         for server in servers
         if server['type']['id'] == 1 and server['storage_type']['id'] == 2
     ])
@@ -219,7 +219,7 @@ def validator_heavy(region: str):
         if server['type']['id'] == 2 and server['storage_type']['id'] == 1
     ])
     storage_unix_hdd = sum([
-        (server['gb'] - DISK_BASE_LIMIT) * 0.77
+        (server['gb'] - DISK_BASE_LIMIT) * DISK_CREATE_LIMIT
         for server in servers
         if server['type']['id'] == 2 and server['storage_type']['id'] == 1
     ])
@@ -236,7 +236,7 @@ def validator_heavy(region: str):
         if server['type']['id'] == 2 and server['storage_type']['id'] == 2
     ])
     storage_unix_ssd = sum([
-        (server['gb'] - DISK_BASE_LIMIT) * 0.77
+        (server['gb'] - DISK_BASE_LIMIT) * DISK_CREATE_LIMIT
         for server in servers
         if server['type']['id'] == 2 and server['storage_type']['id'] == 2
     ])
