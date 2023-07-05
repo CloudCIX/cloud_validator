@@ -294,18 +294,19 @@ def validator_heavy(region: str):
 
     projects: List[Project] = []
 
-    for type in types:
-        while True:
+    while len(types) > 0:
+        for selected_type in types:
             try:
                 token = get_admin_token()
-                project = Project(region=region, token=token, file='', heavy=True, cores=1, ram=1, storage=50, **type)  # type: ignore # noqa
+                project = Project(region=region, token=token, file='', heavy=True, cores=1, ram=1, storage=50, **selected_type)  # type: ignore # noqa
                 project.create()
                 projects.append(project)
             except SystemExit:
-                storage = 'HDD' if type['storage_type_id'] == 1 else 'SSD'
-                print(f'\n - Projects of this type have errored out. Unix: {type["unix"]}; Storage: {storage}')
+                storage = 'HDD' if selected_type['storage_type_id'] == 1 else 'SSD'
+                print(f'\n - Projects of this type have errored out. Unix: {selected_type["unix"]}; Storage: {storage}')
                 print()
-                break
+                # remove type from list
+                types.remove(selected_type)
 
     for project in projects:
         new_token = get_admin_token()
