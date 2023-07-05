@@ -2,7 +2,6 @@
 import getpass
 import os
 import sys
-import random
 from typing import Any, Dict, List, Union
 # local
 from project import Project
