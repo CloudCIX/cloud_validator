@@ -403,7 +403,13 @@ def get_servers(region: str, token: str):
     else:
         # Fetch the servers and assets from the API
         asset_tags = list(set(server['asset_tag'] for server in servers if server['asset_tag'] is not None))
-        asset_params = {'asset_tag__in': asset_tags, 'address_id': region}
+        # TODO: Remove backward compatible filters when Asset is deployed
+        asset_params = {
+            'asset_tag__in': asset_tags,
+            'assetTag__in': asset_tags,
+            'address_id': region,
+            'idAddress': region,
+        }
         response = api.Asset.asset.list(token=token, params=asset_params)
         if response.status_code != 200:
             print(
