@@ -56,7 +56,7 @@ def region_validator(password):
 
     # Hardware information
     os.system('clear')
-    get_servers(region, token)
+    # get_servers(region, token)
     project_count = get_projects(region, robot_token)
 
     # Provide options for what to do
@@ -316,7 +316,7 @@ def validator_heavy(region: str):
     # List VMs using robot token
     robot_token = get_robot_token()
     # Exclude VMs in the Closed State (99)
-    params = ('exclude[state]': 99)
+    params = {'exclude[state]': 99}
     response = api.IAAS.vm.list(token=robot_token, params=params)
     if response.status_code == 200:
         vms = response.json()['content']
@@ -403,7 +403,13 @@ def get_servers(region: str, token: str):
     else:
         # Fetch the servers and assets from the API
         asset_tags = list(set(server['asset_tag'] for server in servers if server['asset_tag'] is not None))
-        asset_params = {'assetTag__in': asset_tags, 'idAddress': region}
+        # TODO: Remove backward compatible filters when Asset is deployed
+        asset_params = {
+            'asset_tag__in': asset_tags,
+            'assetTag__in': asset_tags,
+            'address_id': region,
+            'idAddress': region,
+        }
         response = api.Asset.asset.list(token=token, params=asset_params)
         if response.status_code != 200:
             print(
