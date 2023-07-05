@@ -308,7 +308,6 @@ def validator_heavy(region: str):
                 print()
                 # remove type from list
                 types.remove(selected_type)
-            
 
     for project in projects:
         new_token = get_admin_token()
