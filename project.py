@@ -6,7 +6,7 @@ from datetime import datetime
 from requests import Response
 # local
 import state
-from dataclasses import Data
+from dataclass.data import Data
 from virtual_router import VirtualRouter
 from vm import VM
 # cloudcix
